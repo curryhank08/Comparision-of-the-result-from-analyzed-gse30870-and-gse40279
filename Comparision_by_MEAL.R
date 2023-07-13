@@ -50,7 +50,7 @@ pData(gse40279_matrix)$age <- age
 
 # Define age categories based on specific age ranges
 age_categories <- cut(age,
-                      breaks = c(0, 30, 65, Inf),
+                      breaks = c(0, 30, 89, Inf),
                       labels = c("Young", "Middle", "Old"),
                       include.lowest = TRUE)
 
@@ -58,7 +58,7 @@ age_categories <- cut(age,
 pData(gse40279_matrix)$age_category <- age_categories
 
 # Assign seqnames to the pData of gse40279_matrix from CHR
-fData(gse40279_matrix)$seqnames <- as.numeric(fData(gse40279_matrix)$CHR)
+# fData(gse40279_matrix)$seqnames <- as.numeric(fData(gse40279_matrix)$CHR)
 
 # Run MEAL pipeline on the categorized data
 res <- runPipeline(set = gse40279_matrix,
@@ -69,7 +69,6 @@ res <- runPipeline(set = gse40279_matrix,
 # Extract the result of the DiffMean analysis
 result_Meal <- getProbeResults(res, rid = 1, 
                                fNames = c("UCSC_RefGene_Name", "RANGE_START", "CHR", "ID"))
-
 # Remove rows with missing values
 # result_Meal_clean <- na.omit(result_Meal)
 
@@ -116,7 +115,7 @@ result_Meal_sub_YO <- getProbeResults(res_sub_YO, rid = 1,
 result_Meal_sub_YO_clean <- na.omit(result_Meal_sub_YO)
 
 
-
+'''
 # Create a new age category with 2 levels (Middle and Old)
 MO_age_categories <- factor(age_categories, levels = c("Middle", "Old"))
 MO_age_categories <- na.omit(MO_age_categories)
@@ -139,7 +138,69 @@ result_Meal_sub_MO <- getProbeResults(res_sub_MO, rid = 1,
 
 # Remove rows with missing values
 result_Meal_sub_MO_clean <- na.omit(result_Meal_sub_MO)
+'''
 
+### Part 2 (30870)
+
+# Create age categories
+age_categories_30870 <- pData(gse30870_matrix)$source_name_ch1
+age_categories_30870 <- as.factor(age_categories_30870)
+
+# Assign age categories to the pData of gse40279_matrix
+pData(gse30870_matrix)$age_category <- age_categories_30870
+
+# Run MEAL pipeline on the categorized data
+res_30870 <- runPipeline(set = gse30870_matrix,
+                   variable_names = "age_category",
+                   betas = TRUE,
+                   analyses = c("DiffMean", "DiffVar"))
+
+# Extract the result of the DiffMean analysis
+result_Meal_30870 <- getProbeResults(res_30870, rid = 1, 
+                               fNames = c("UCSC_RefGene_Name", "RANGE_START", "CHR", "ID"))
+
+'''
+### Part 1-2
+## manhattan plot for all
+library(qqman)
+# function from qqman to plot manhattan 
+result_Meal$CHR <- as.numeric(result_Meal$CHR)
+manhattan(result_Meal, 
+          main = "Manhattan Plot for gse40279 (Analysis of DiffMean on MEAL)",
+          cex = 0.6,
+          ylim = c(0, 25),
+          chr="CHR", 
+          bp="RANGE_START", 
+          snp= "ID", 
+          p="P.Value" )
+
+## Subset the data matrix for the filtered samples
+# filtered_data <- data[, colnames(data) %in% rownames(young_old_samples)]
+
+# Create a new age category with 2 levels (Old and Young)
+new_age_categories <- factor(age_categories, levels = c("Old", "Young"))
+new_age_categories <- na.omit(new_age_categories)
+
+# Extract samples belonging to "Young" and "Old" age categories
+subset_forMeal_YO <- gse40279_matrix[, age_categories %in% c("Young", "Old")]
+subset_forMeal_YO_data <- exprs(subset_forMeal_YO)
+# Assign the new age category to pData of the subset
+pData(subset_forMeal_YO)$new_age_category <- new_age_categories
+# subeset samples info
+subset_forMeal_YO_samplesinfo <- pData(subset_forMeal_YO)
+
+# Run MEAL pipeline on the subset YO
+res_sub_YO <- runPipeline(set = subset_forMeal_YO,
+                          variable_names = "new_age_category",
+                          betas = TRUE,
+                          analyses = c("DiffMean", "DiffVar"))
+
+# Extract the result of the DiffMean analysis
+result_Meal_sub_YO <- getProbeResults(res_sub_YO, rid = 1, 
+                                      fNames = c("UCSC_RefGene_Name", "RANGE_START", "CHR", "ID"))
+
+# Remove rows with missing values
+result_Meal_sub_YO_clean <- na.omit(result_Meal_sub_YO)
 
 
 ## manhattan plot for subset YO 
@@ -230,9 +291,9 @@ res <- runPipeline(set = gse40279_matrix,
 plotRegion(res, targetRange)
 plotRegion(res, targetRange, results = c("DiffMean"), tPV = 24, fNames = c("chromosome", "start", "end"))
 ## (Error) not yet solved
+'''
 
-
-
+'''
 ### Part 2
 ## Load gse40279 and run analysis by using "limma" packages (from original code limma.R)
 library(limma)
@@ -295,26 +356,53 @@ vennDiagram(results)
 
 # Remove rows with missing values
 # result_limma_coef1_clean <- na.omit(result_limma_2)
-
+'''
 
 ### Part 3
-## Merge the results of analysis from MEAL and limma, and then create a scatter plot (from original code 6.R)
+## Merge the results of analysis from gse30870 and gse40279, and then create a scatter plot.
 library(ggplot2)
 
 # Merge results
-res_limma_YO_c_p <- data.frame(name = row.names(result_limma_YO), limma_p = result_limma_YO$P.Value)
-res_MEAL_YO_c_p <- data.frame(name = row.names(result_Meal_sub_YO_clean), MEAL_p = result_Meal_sub_YO_clean$P.Value)
+res_30870_YO_p <- data.frame(probe_name_30870 = row.names(result_Meal_30870), p_30870 = result_Meal_30870$P.Value, UCSC_RefGene_name = result_Meal_30870$UCSC_RefGene_Name)
+res_40279_YO_p <- data.frame(probe_name_40279 = row.names(result_Meal_sub_YO_clean), p_40279 = result_Meal_sub_YO_clean$P.Value, UCSC_RefGene_name = result_Meal_sub_YO_clean$UCSC_RefGene_Name)
 
-limma_Meal_YO_p <- merge(res_limma_YO_c_p,
-                         res_MEAL_YO_c_p,
-                         by.x = "name",
-                         by.y = "name")
+YO_30870_40279_p <- merge(res_30870_YO_p,
+                          res_40279_YO_p,
+                         by.x = "probe_name_30870",
+                         by.y = "probe_name_40279")
 
 # Create a scatter plot with x-axis: p-value from limma and y-axis: p-value from MEAL.
-plot(limma_Meal_YO_p$limma_p, limma_Meal_YO_p$MEAL_p, 
-     xlab = "limma_P.value", ylab = "MEAL_P.value", 
-     main = "P.value from Analysis of DiffMean (Young - Old) on MEAL and limma", 
+plot(log(YO_30870_40279_p$p_30870), log(YO_30870_40279_p$p_40279), 
+     xlab = "P.value from analysis of gse30870", ylab = "P.value from analysis of gse40279", 
+     main = "Comparision of gse30870 and gse40279", 
      pch = 20, col = "#8bc34a", cex = 1)
+
+different_probe <- data.frame(row.names = res_30870_YO_p$probe_name_30870)
+colnames(different_probe) = c(p_30870, p_40279, UCSC_RefGene_name)
+
+condition <- abs((res_30870_YO_p$p_30870)/(res_40279_YO_p$p_40279)) > 25
+for x in res_30870_YO_p$probe_name_30870{
+  if condition {
+    rbind()
+  }
+} 
+
+
+different_probe <- data.frame(matrix(ncol = 3))
+colnames(different_probe) <- c("p_30870", "p_40279", "UCSC_RefGene_name")
+
+for (x in res_30870_YO_p$probe_name_30870) {
+  condition <- abs((res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]) /
+                     (res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"])) > 25
+  
+  if (condition) {
+    row_to_add <- c(res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"],
+                    res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"],
+                    res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "UCSC_RefGene_name"])
+    
+    different_probe <- rbind(different_probe, row_to_add)
+  }
+}
 
 # Mean-Difference Plot from limma
 as.numeric(limma_Meal_YO_p$limma_p)
