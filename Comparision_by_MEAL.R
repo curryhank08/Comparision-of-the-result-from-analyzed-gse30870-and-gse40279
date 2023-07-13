@@ -1,7 +1,7 @@
 #### author: 姚博瀚
 
 ### Part 1
-## Download gse40279 and run analysis by using "MEAL" package (from original code 4.R)
+## Download gse40279 and gse30870 and run analysis by using "MEAL" package.
 library(MEAL)
 library(minfi)
 library(limma)
@@ -10,7 +10,7 @@ library(ggplot2)
 # Install remotes from CRAN (Optional)
 install.packages("remotes")
 # Download modified GEOquery package from my github 
-# by using function(install_github()) from 'remotes' package. 
+# by using the function install_github() from 'remotes' package. 
 library(remotes)
 install_github("curryhank08/GEOquery_with_modifiable_timeout_seconds", force = TRUE)
 # Load modified GEOquery
@@ -20,11 +20,16 @@ options(timeout=100000)
 # Check the input timeout_seconds
 getOption("timeout")
 
-# Download GSE40279 by a fuction getGEO() from modified GEOquery package.
+# Download GSE40279 by the fuction getGEO() from modified GEOquery package.
 gse40279 <- getGEO("GSE40279", GSEMatrix = TRUE, AnnotGPL = TRUE)
 gse40279_matrix <- gse40279[[1]]
 
-data <- exprs(gse40279_matrix)
+# Download GSE30870 by the fuction getGEO() from modified GEOquery package.
+gse30870 <- getGEO("GSE30870", GSEMatrix = TRUE, AnnotGPL = TRUE)
+gse30870_matrix <- gse30870[[1]]
+
+gse40279_data <- exprs(gse40279_matrix)
+gse30870_data <- exprs(gse30870_matrix)
 
 # Create age categories
 age <- pData(gse40279_matrix)$characteristics_ch1
