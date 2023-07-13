@@ -23,12 +23,11 @@ getOption("timeout")
 # Download GSE40279 by the fuction getGEO() from modified GEOquery package.
 gse40279 <- getGEO("GSE40279", GSEMatrix = TRUE, AnnotGPL = TRUE)
 gse40279_matrix <- gse40279[[1]]
+gse40279_data <- exprs(gse40279_matrix)
 
 # Download GSE30870 by the fuction getGEO() from modified GEOquery package.
 gse30870 <- getGEO("GSE30870", GSEMatrix = TRUE, AnnotGPL = TRUE)
 gse30870_matrix <- gse30870[[1]]
-
-gse40279_data <- exprs(gse40279_matrix)
 gse30870_data <- exprs(gse30870_matrix)
 
 # Create age categories
@@ -37,6 +36,10 @@ age <- pData(gse40279_matrix)$characteristics_ch1
 # Remove "age (y):" and convert to numeric
 age <- sub("^\\s*age \\(y\\): ", "", age)
 age <- as.numeric(age)
+
+gse40279_30below <- table(cut(age, breaks = 0:30))
+gse40279_90up <- table(cut(age, breaks = 89:110))
+gse40279_age30_90 <- data.frame(below30 = sum(gse40279_30below), up90 = sum(gse40279_90up), row.names = "numbers")
 
 # The ^ character denotes the start of the string,
 # \\s* matches any number of leading whitespace characters,
