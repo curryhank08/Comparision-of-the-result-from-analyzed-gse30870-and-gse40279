@@ -395,6 +395,25 @@ for (x in res_30870_YO_p$probe_name_30870) {
   condition <- abs((res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]) /
                      (res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"])) > 25
   
+  row_to_add <- ifelse(condition,
+                       c(res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]),
+                       NA)
+  
+  if (!is.na(row_to_add)) {
+    row_to_add <- c(row_to_add,
+                    res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"],
+                    res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "UCSC_RefGene_name"])
+    
+    different_probe <- rbind(different_probe, row_to_add)
+  }
+}
+
+
+'''
+for (x in res_30870_YO_p$probe_name_30870) {
+  condition <- abs((res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]) /
+                     (res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"])) > 25
+  
   if (condition) {
     row_to_add <- c(res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"],
                     res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"],
@@ -403,7 +422,7 @@ for (x in res_30870_YO_p$probe_name_30870) {
     different_probe <- rbind(different_probe, row_to_add)
   }
 }
-
+'''
 # Mean-Difference Plot from limma
 as.numeric(limma_Meal_YO_p$limma_p)
 as.numeric(limma_Meal_YO_p$MEAL_p)
