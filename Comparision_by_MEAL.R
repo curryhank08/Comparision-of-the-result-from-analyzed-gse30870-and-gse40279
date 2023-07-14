@@ -377,6 +377,7 @@ plot(log(YO_30870_40279_p$p_30870), log(YO_30870_40279_p$p_40279),
      main = "Comparision of gse30870 and gse40279", 
      pch = 20, col = "#8bc34a", cex = 1)
 
+'
 different_probe <- data.frame(row.names = res_30870_YO_p$probe_name_30870)
 colnames(different_probe) = c(p_30870, p_40279, UCSC_RefGene_name)
 
@@ -386,8 +387,10 @@ for x in res_30870_YO_p$probe_name_30870{
     rbind()
   }
 } 
+'
 
-
+'
+# unefficient way 
 different_probe <- data.frame(matrix(ncol = 3))
 colnames(different_probe) <- c("p_30870", "p_40279", "UCSC_RefGene_name")
 
@@ -399,7 +402,7 @@ for (x in res_30870_YO_p$probe_name_30870) {
                        c(res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]),
                        NA)
   
-  if (!is.na(row_to_add)) {
+  if (length(row_to_add) > 0 && !is.na(row_to_add)) {
     row_to_add <- c(row_to_add,
                     res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"],
                     res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "UCSC_RefGene_name"])
@@ -407,22 +410,19 @@ for (x in res_30870_YO_p$probe_name_30870) {
     different_probe <- rbind(different_probe, row_to_add)
   }
 }
+'
+
+# Find the matching rows based on probe_name_30870 and probe_name_40279
+matching_rows <- merge(res_30870_YO_p, res_40279_YO_p,
+                       by.x = "probe_name_30870", by.y = "probe_name_40279", all = FALSE)
+
+# Calculate the condition
+condition <- abs(log10(matching_rows$p_30870 / matching_rows$p_40279)) > 25
+
+# Subset the matching rows based on the condition
+different_probe <- matching_rows[condition, c("probe_name_30870", "p_30870", "p_40279", "UCSC_RefGene_name.x")]
 
 
-'''
-for (x in res_30870_YO_p$probe_name_30870) {
-  condition <- abs((res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"]) /
-                     (res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"])) > 25
-  
-  if (condition) {
-    row_to_add <- c(res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "p_30870"],
-                    res_40279_YO_p[res_40279_YO_p$probe_name_40279 == x, "p_40279"],
-                    res_30870_YO_p[res_30870_YO_p$probe_name_30870 == x, "UCSC_RefGene_name"])
-    
-    different_probe <- rbind(different_probe, row_to_add)
-  }
-}
-'''
 # Mean-Difference Plot from limma
 as.numeric(limma_Meal_YO_p$limma_p)
 as.numeric(limma_Meal_YO_p$MEAL_p)
