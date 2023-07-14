@@ -37,13 +37,14 @@ age <- pData(gse40279_matrix)$characteristics_ch1
 age <- sub("^\\s*age \\(y\\): ", "", age)
 age <- as.numeric(age)
 
-gse40279_30below <- table(cut(age, breaks = 0:30))
-gse40279_90up <- table(cut(age, breaks = 89:110))
-gse40279_age30_90 <- data.frame(below30 = sum(gse40279_30below), up90 = sum(gse40279_90up), row.names = "numbers")
-
 # The ^ character denotes the start of the string,
 # \\s* matches any number of leading whitespace characters,
 # and "age \\(y\\): " matches the exact string "age (y): ". 
+
+
+gse40279_30below <- table(cut(age, breaks = 0:30))
+gse40279_90up <- table(cut(age, breaks = 89:110))
+gse40279_age30_90 <- data.frame(below30 = sum(gse40279_30below), up90 = sum(gse40279_90up), row.names = "numbers")
 
 # Assign age values to a new column in pData of gse40279_matrix
 pData(gse40279_matrix)$age <- age
