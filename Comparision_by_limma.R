@@ -2,6 +2,7 @@
 library(limma)
 
 # Load the expression data
+
 # Assuming you have loaded the expression data into variables "exprs_gse30870" and "exprs_gse40279"
 
 # Get the common probe IDs from both ExpressionSet objects

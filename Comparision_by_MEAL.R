@@ -30,7 +30,7 @@ gse30870 <- getGEO("GSE30870", GSEMatrix = TRUE, AnnotGPL = TRUE)
 gse30870_matrix <- gse30870[[1]]
 gse30870_data <- exprs(gse30870_matrix)
 
-# Create age categories
+# Create a new age from 'characteristics_ch1' and assign into pheno data of gse40279_matrix after processed.
 age <- pData(gse40279_matrix)$characteristics_ch1
 
 # Remove "age (y):" and convert to numeric
@@ -116,7 +116,7 @@ result_Meal_sub_YO <- getProbeResults(res_sub_YO, rid = 1,
 result_Meal_sub_YO_clean <- na.omit(result_Meal_sub_YO)
 
 
-'''
+'
 # Create a new age category with 2 levels (Middle and Old)
 MO_age_categories <- factor(age_categories, levels = c("Middle", "Old"))
 MO_age_categories <- na.omit(MO_age_categories)
@@ -139,7 +139,7 @@ result_Meal_sub_MO <- getProbeResults(res_sub_MO, rid = 1,
 
 # Remove rows with missing values
 result_Meal_sub_MO_clean <- na.omit(result_Meal_sub_MO)
-'''
+'
 
 ### Part 2 (30870)
 
@@ -160,7 +160,7 @@ res_30870 <- runPipeline(set = gse30870_matrix,
 result_Meal_30870 <- getProbeResults(res_30870, rid = 1, 
                                fNames = c("UCSC_RefGene_Name", "RANGE_START", "CHR", "ID"))
 
-'''
+'
 ### Part 1-2
 ## manhattan plot for all
 library(qqman)
@@ -277,8 +277,8 @@ targetRange <- GRanges("18:60000000-100000000")
 # Check the current value of fData(res)$Strand
 currentStrand <- fData(gse40279_matrix)$Strand
 
-# Transform '+' if the value is 'F', and '-' if the value is 'R'
-transformedStrand <- ifelse(currentStrand == 'F', '+', ifelse(currentStrand == 'R', '-', currentStrand))
+# Transform "+" if the value is "F", and "-" if the value is "R" 
+transformedStrand <- ifelse(currentStrand == "F", "+", ifelse(currentStrand == "R", "-", currentStrand))
 
 # Assign the transformed values back to fData(res)$Strand
 fData(gse40279_matrix)$Strand <- transformedStrand
@@ -292,9 +292,9 @@ res <- runPipeline(set = gse40279_matrix,
 plotRegion(res, targetRange)
 plotRegion(res, targetRange, results = c("DiffMean"), tPV = 24, fNames = c("chromosome", "start", "end"))
 ## (Error) not yet solved
-'''
+'
 
-'''
+'
 ### Part 2
 ## Load gse40279 and run analysis by using "limma" packages (from original code limma.R)
 library(limma)
@@ -357,7 +357,7 @@ vennDiagram(results)
 
 # Remove rows with missing values
 # result_limma_coef1_clean <- na.omit(result_limma_2)
-'''
+'
 
 ### Part 3
 ## Merge the results of analysis from gse30870 and gse40279, and then create a scatter plot.
@@ -389,6 +389,7 @@ for x in res_30870_YO_p$probe_name_30870{
   }
 } 
 '
+
 
 '
 # unefficient way 
