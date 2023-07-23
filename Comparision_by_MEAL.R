@@ -381,6 +381,22 @@ merged_30870_40279_p <- merge(res_30870_YO_p,
                           res_40279_YO_p,
                          by.x = "ProbeID",
                          by.y = "ProbeID")
+'
+ggplot(merged_30870_40279_p, aes(x = log(p_30870), y = log(p_40279)) +
+  geom_point(alpha = 0.7, color = black, size = 0.5) +
+  labs(x = "p-value in GSE30870", y = "p-value in GSE40279") +
+  theme_minimal()
+'
+
+plot(log(merged_30870_40279_p$p_30870), log(merged_30870_40279_p$p_40279), 
+       xlab = "P.value from analysis of gse30870", ylab = "P.value from analysis of gse40279", 
+       main = "Comparision of gse30870 and gse40279", 
+       pch = 20, col = "#8bc34a", cex = 1)
+
+condition1 <- (merged_30870_40279_p$p_30870 < 1e-5)
+condition2 <- (merged_30870_40279_p$p_40279 < 1e-5)
+
+filerd_data <- merged_30870_40279_p[condition1&condition2, ]
 
 # Calculate the condition
 condition <- abs(log10(matching_rows$p_30870 / matching_rows$p_40279)) > 25
