@@ -74,7 +74,6 @@ ggplot(a, aes(x = factor(age_40279)) +
   labs(title = "Age Distribution", x = "Age", y = "Count") +
   theme_minimal()
 
-'
 # Assign age values to a new column in pData of gse40279_matrix
 pData(gse40279_matrix)$age <- age_40279
 
@@ -87,9 +86,6 @@ age_categories_40279 <- cut(age_40279,
 # Assign age categories to the pData of gse40279_matrix
 pData(gse40279_matrix)$age_category <- age_categories_40279
 
-# Assign seqnames to the pData of gse40279_matrix from CHR
-# fData(gse40279_matrix)$seqnames <- as.numeric(fData(gse40279_matrix)$CHR)
-'
 # Run MEAL pipeline on the categorized data
 res_40279 <- runPipeline(set = gse40279_matrix,
                    variable_names = "age_category",
