@@ -51,8 +51,8 @@ gse40279_90above <- data.frame(gse40279_90above)
 
 gse40279_age30_90 <- data.frame(below30 = sum(gse40279_30below), up90 = sum(gse40279_90above), row.names = "numbers")
 
-age_values <- 1:30
-freq_values <- table(factor(age_40279, levels = age_values))
+age_values_1 <- 1:30
+freq_values <- table(factor(age_40279, levels = age_values_1))
 gse40279_30below <- data.frame(freq_values)
 colnames(gse40279_30below) = c("age", "Freq")
 
@@ -63,15 +63,53 @@ ggplot(gse40279_30below, aes(x = age, y = Freq)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
+age_values_2 <- 90:105
+freq_values_2 <- table(factor(age_40279, levels = age_values_2))
+gse40279_90above <- data.frame(freq_values_2)
+colnames(gse40279_90above) = c("age", "Freq")
+
+# Create the histogram plot
+ggplot(gse40279_90above, aes(x = age, y = Freq)) +
+  geom_col(fill = "skyblue", color = "black") +
+  labs(title = "Age Distribution (gse40279)", x = "Age", y = "Count")+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
 a <- data.frame(age_40279)
 ggplot(a, aes(x = age_40279)) + 
   geom_histogram()
 
 # Create the histogram plot
-ggplot(a, aes(x = factor(age_40279)) +
+ggplot(a, aes(x = age_40279)) +
   geom_bar(fill = "skyblue", color = "black", stat = "count") +
   scale_x_continuous(breaks = unique(a$age_40279)) +
   labs(title = "Age Distribution", x = "Age", y = "Count") +
+  theme_minimal()
+
+ggplot(merged_30870_40279_p, aes(x = ProbeID, y = value, color = variable)) +
+  geom_line(linetype = 3,
+            lwd = 1.1)
+
+# Melt the data frame to gather the values for p_30870 and p_40279 into separate rows
+library(reshape2)
+melted_df <- melt(merged_30870_40279_p, id.vars = "ProbeID", measure.vars = c("p_30870", "p_40279"))
+
+# Create the line plot using ggplot
+ggplot(data = melted_df, aes(x = ProbeID, y = value, color = variable, group = variable)) +
+  geom_line() +
+  labs(x = "ProbeID", y = "Values", color = "Lines") +
+  theme_minimal()
+
+# (for filterd data) Melt the data frame to gather the values for p_30870 and p_40279 into separate rows
+library(reshape2)
+melted_df_fil <- melt(filerd_data, id.vars = "ProbeID", measure.vars = c("p_30870", "p_40279"))
+
+# Create the line plot using ggplot
+ggplot(data = head(melted_df_fil), aes(x = ProbeID, y = log10(value), color = variable, group = variable)) +
+  geom_line(linetype = 3, lwd = 0.5) +
+  labs(x = "ProbeID", y = "Values", color = "Lines") +
   theme_minimal()
 
 # Assign age values to a new column in pData of gse40279_matrix
@@ -181,8 +219,8 @@ condition <- abs(log10(matching_rows$p_30870 / matching_rows$p_40279)) > 25
 different_probe <- matching_rows[condition, c("probe_name_30870", "p_30870", "p_40279", "UCSC_RefGene_name.x")]
 
 # Create a scatter plot with x-axis: p-value from limma and y-axis: p-value from MEAL.
-plot(log(YO_30870_40279_p$p_30870), log(YO_30870_40279_p$p_40279), 
-     xlab = "P.value from analysis of gse30870", ylab = "P.value from analysis of gse40279", 
+plot(log10(filerd_data$p_30870), log10(filerd_data$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from analysis of gse40279", 
      main = "Comparision of gse30870 and gse40279", 
      pch = 20, col = "#8bc34a", cex = 1)
 
