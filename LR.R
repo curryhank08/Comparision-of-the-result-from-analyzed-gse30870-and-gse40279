@@ -1,6 +1,7 @@
+## author: haku yao
+
 library(limma)
 library(MEAL)
-age_40279 <- data.frame()
 
 # Assuming the probe IDs are listed in the 'probe_id' column of the dataset
 probe_ids <- unique(fData(gse40279_matrix)$ID)
@@ -23,7 +24,7 @@ for (probe_id in probe_ids) {
   probe_regression_results[[probe_id]] <- model
 }
 
-
+'
 # Select data for the current probe
 probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg00000029')
 
@@ -33,8 +34,7 @@ y <- assayData(probe_data)$exprs[1, ]
 
 # Create and fit the linear regression model
 model <- lm(y ~ X)
-
-
+'
 
 # Get the regression model for the specific probe
 model_probe_cg16867657 <- probe_regression_results[['cg16867657']]
@@ -45,8 +45,8 @@ model_probe_cg23201812 <- probe_regression_results[['cg23201812']]
 
 model_probe_cg04875128 <- probe_regression_results[['cg04875128']]
 
-cor_cg16867657 <- cor(model_probe_cg16867657$model$x, y = model_probe_cg16867657$model$y, use = "everything",
-    method = "pearson")
+cor_cg16867657 <- cor(model_probe_cg16867657$model$x, y = model_probe_cg16867657$model$y, use = "everything", 
+                      method = "pearson")
 cor_cg22454769 <- cor(model_probe_cg22454769$model$x, y = model_probe_cg22454769$model$y, use = "everything",
                       method = "pearson")
 cor_cg23201812 <- cor(model_probe_cg23201812$model$x, y = model_probe_cg23201812$model$y, use = "everything",
@@ -54,6 +54,7 @@ cor_cg23201812 <- cor(model_probe_cg23201812$model$x, y = model_probe_cg23201812
 cor_cg04875128 <- cor(model_probe_cg04875128$model$x, y = model_probe_cg04875128$model$y, use = "everything",
                       method = "pearson")
 
+## Create a data frame with all probes corresponding pearson correlation coefficients  
 # Define a function to compute the correlation coefficient for a given probe's model
 get_correlation_coefficient <- function(model) {
   correlation_coefficient <- cor(model$x, y = model$y, use = "everything", method = "pearson")
@@ -71,9 +72,10 @@ correlation_coefficients <- lapply(probe_ids, function(probe_id) {
 
 # Combine the results into a data frame
 correlation_df <- data.frame(probe_id = probe_ids, correlation_coefficient = unlist(correlation_coefficients))
+##
 
 
-
+## Plot a specific probe's linear regression model with correlation coefficient
 # Replace 'cg16867657' with the specific probe ID you want to plot
 probe_id_of_interest <- 'cg16867657'
 model_of_interest <- probe_regression_results[[probe_id_of_interest]]$model
@@ -99,7 +101,7 @@ plot_lm <- ggplot(data_of_interest, aes(x = X, y = y)) +
   geom_text(x = min(data_of_interest$X), y = max(data_of_interest$y),
             label = paste("Correlation:", round(cor_coefficient, 3)),
             hjust = 0, vjust = 1, color = "black", size = 4) +  # Add correlation coefficient
-  geom_text(x = min(data_of_interest$X), y = max(data_of_interest$y) - 0.05,  # Adjust y value to place it below the correlation
+  geom_text(x = min(data_of_interest$X), y = max(data_of_interest$y) - 0.03,  # Adjust y value to place it below the correlation
             label = paste("Total numbers of points:", total_points),
             hjust = 0, vjust = 1, color = "black", size = 4) +  # Add total number of points
   labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
@@ -108,11 +110,10 @@ plot_lm <- ggplot(data_of_interest, aes(x = X, y = y)) +
 
 # Show the plot
 print(plot_lm)
-
-
+##
 
 # Coefficients
 coefficients(model_probe_cg16867657)
 
 # R-squared value
-summary(model_probe_cg16867657)
+summary(model_probe_cg16867657)$r.squared
