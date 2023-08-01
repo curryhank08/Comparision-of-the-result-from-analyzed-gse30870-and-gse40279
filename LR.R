@@ -13,7 +13,7 @@ for (probe_id in probe_ids) {
   # Select data for the current probe
   probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
   
-  # Extract the age and beta value as the predictor and response variables
+  # Extract the age and beta value
   x <- probe_data$age
   y <- assayData(probe_data)$exprs[1, ]
   
@@ -76,7 +76,7 @@ correlation_df <- data.frame(probe_id = probe_ids, correlation_coefficient = unl
 
 
 ## Plot a specific probe's linear regression model with correlation coefficient
-# Replace 'cg16867657' with the specific probe ID you want to plot
+# Extract the data of interest
 probe_id_of_interest <- 'cg16867657'
 model_of_interest <- probe_regression_results[[probe_id_of_interest]]$model
 
