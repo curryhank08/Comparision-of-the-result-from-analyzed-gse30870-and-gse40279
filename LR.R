@@ -1,5 +1,8 @@
 ## author: haku yao
-
+install.packages("ggplot2")
+install.packages("devtools")
+library(devtools)
+install_github('seandavi/GEOquery')
 library(limma)
 library(MEAL)
 
@@ -24,6 +27,136 @@ for (probe_id in probe_ids) {
   probe_regression_results[[probe_id]] <- model
 }
 
+
+# Assuming the probe IDs are listed in the 'probe_id' column of the dataset
+probe_ids <- unique(fData(gse40279_matrix)$ID)
+
+# Define a function to fit the linear regression model
+fit_regression <- function(probe_id) {
+  # Select data for the current probe
+  probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+  
+  # Extract the age and beta value as the predictor and response variables
+  x <- probe_data$age
+  y <- assayData(probe_data)$exprs[1, ]
+  
+  # Create and fit the linear regression model
+  model <- lm(y ~ x)
+  
+  return(model)
+}
+
+# Apply the function to each probe ID and store the results in a list
+probe_regression_results <- lapply(probe_ids, fit_regression)
+
+
+
+# Assuming the probe IDs are listed in the 'probe_id' column of the dataset
+probe_ids <- unique(fData(gse40279_matrix)$ID)
+
+# Define a function to fit the linear regression model and extract relevant information
+fit_regression <- function(probe_id) {
+  # Select data for the current probe
+  probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+  
+  # Extract the age and beta value as the predictor and response variables
+  x <- probe_data$age
+  y <- assayData(probe_data)$exprs[1, ]
+  
+  # Create and fit the linear regression model
+  model <- lm(y ~ x)
+  
+  # Extract and return relevant information from the model
+  model_summary <- summary(model)
+  coefficients <- coef(model)
+  
+  return(list(probe_id = probe_id, model_summary = model_summary, coefficients = coefficients))
+}
+
+# Apply the function to each probe ID and store the results in a list
+probe_regression_results <- lapply(probe_ids, fit_regression)
+
+
+
+# Assuming the probe IDs are listed in the 'probe_id' column of the dataset
+probe_ids <- unique(fData(gse40279_matrix)$ID)
+
+# Create an empty data frame to store the results
+result_df <- data.frame(probe_id = character(0),
+                        coefficients = numeric(0),
+                        r_squared = numeric(0),
+                        p_value = numeriv(0),
+                        # Add more columns as needed
+                        stringsAsFactors = FALSE)
+
+# Define a function to fit the linear regression model and extract relevant information
+fit_regression <- function(probe_id) {
+  # Select data for the current probe
+  probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+  
+  # Extract the age and beta value as the predictor and response variables
+  x <- probe_data$age
+  y <- assayData(probe_data)$exprs[1, ]
+  
+  # Create and fit the linear regression model
+  model <- lm(y ~ x)
+  
+  # Extract relevant information from the model
+  model_summary <- summary(model)
+  coefficients <- coef(model)
+  r_squared <- summary(model)$r.squared
+  p_value <- summary(model)$coefficients["X", "Pr(>|t|)"]
+  
+  return(data.frame(probe_id = probe_id,
+                    coefficients = coefficients["x"],  # Extract coefficient for predictor 'x'
+                    r_squared = r_squared,
+                    p_value = p_value))
+}
+
+# Apply the function to each probe ID and rbind the results to the data frame
+result_df <- do.call(rbind, lapply(probe_ids, fit_regression))
+
+
+
+# Assuming the probe IDs are listed in the 'probe_id' column of the dataset
+probe_ids <- unique(fData(gse40279_matrix)$ID)
+
+# Create an empty data frame to store the results
+result_df_2 <- data.frame(probe_id = character(0),
+                        coefficients = numeric(0),
+                        p_value = numeric(0),
+                        r_squared = numeric(0),
+                        # Add more columns as needed
+                        stringsAsFactors = FALSE)
+
+# Define a function to fit the linear regression model and extract relevant information
+fit_regression_2 <- function(probe_id) {
+  # Select data for the current probe
+  probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+  
+  # Extract the age and beta value as the predictor and response variables
+  x <- probe_data$age
+  y <- assayData(probe_data)$exprs[1, ]
+  
+  # Create and fit the linear regression model
+  model <- lm(y ~ x)
+  
+  # Extract relevant information from the model
+  model_summary <- summary(model)
+  coefficients <- coef(model)
+  p_value <- summary(model)$coefficients[2, "Pr(>|t|)"]
+  r_squared <- summary(model)$r.squared
+  
+  return(data.frame(probe_id = probe_id,
+                    coefficients = coefficients["x"],  # Extract coefficient for predictor 'x'
+                    p_value = p_value,
+                    r_squared = r_squared))
+}
+
+# Apply the function to each probe ID and rbind the results to the data frame
+result_df_2 <- do.call(rbind, lapply(probe_ids, fit_regression_2))
+
+
 '
 # Select data for the current probe
 probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg00000029')
@@ -34,6 +167,7 @@ y <- assayData(probe_data)$exprs[1, ]
 
 # Create and fit the linear regression model
 model <- lm(y ~ X)
+summary_model <- summary(model)
 '
 
 # Get the regression model for the specific probe
@@ -73,6 +207,8 @@ correlation_coefficients <- lapply(probe_ids, function(probe_id) {
 # Combine the results into a data frame
 correlation_df <- data.frame(probe_id = probe_ids, correlation_coefficient = unlist(correlation_coefficients))
 ##
+
+
 
 
 ## Plot a specific probe's linear regression model with correlation coefficient
