@@ -16,7 +16,7 @@ for (probe_id in probe_ids) {
   # Select data for the current probe
   probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
   
-  # Extract the age and beta value
+  # Extract the age and beta value as the predictor and response variables
   x <- probe_data$age
   y <- assayData(probe_data)$exprs[1, ]
   
@@ -118,6 +118,7 @@ result_df <- do.call(rbind, lapply(probe_ids, fit_regression))
 
 
 
+
 # Assuming the probe IDs are listed in the 'probe_id' column of the dataset
 probe_ids <- unique(fData(gse40279_matrix)$ID)
 
@@ -156,6 +157,17 @@ fit_regression_2 <- function(probe_id) {
 # Apply the function to each probe ID and rbind the results to the data frame
 result_df_2 <- do.call(rbind, lapply(probe_ids, fit_regression_2))
 
+
+
+
+## By limma (Not yet solved)
+conditions <- gse40279_matrix$age
+f <- factor(conditions)
+design <- model.matrix(~0+f)
+colnames(design) <- "age"
+fit <- lmFit(gse40279_matrix, design)
+fit <- eBayes(fit)
+result_limma <- topTable(fit, number = Inf, adjust.method = "BH")
 
 '
 # Select data for the current probe
@@ -212,7 +224,7 @@ correlation_df <- data.frame(probe_id = probe_ids, correlation_coefficient = unl
 
 
 ## Plot a specific probe's linear regression model with correlation coefficient
-# Extract the data of interest
+# Replace 'cg16867657' with the specific probe ID you want to plot
 probe_id_of_interest <- 'cg16867657'
 model_of_interest <- probe_regression_results[[probe_id_of_interest]]$model
 
