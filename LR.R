@@ -162,16 +162,24 @@ result_df_2 <- do.call(rbind, lapply(probe_ids, fit_regression_2))
 
 ## By limma (Not yet solved)
 conditions <- gse40279_matrix$age
-f <- factor(conditions)
-design <- model.matrix(~0+f)
+#f <- factor(conditions)
+design <- model.matrix(~0+conditions)
 colnames(design) <- "age"
 fit <- lmFit(gse40279_matrix, design)
 fit <- eBayes(fit)
 result_limma <- topTable(fit, number = Inf, adjust.method = "BH")
+result_limma_2 <- result_limma[, c("UCSC_RefGene_Name", "P.Value", "logFC")]
 
-'
+library(ggplot2)
+ggplot(result_df_2, aes(x = -log10(p_value))) +
+  geom_histogram()
+
+  
+  
+  
+
 # Select data for the current probe
-probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg00000029')
+probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg01403239')
 
 # Extract the age and beta value as the predictor and response variables
 X <- probe_data$age
@@ -180,7 +188,7 @@ y <- assayData(probe_data)$exprs[1, ]
 # Create and fit the linear regression model
 model <- lm(y ~ X)
 summary_model <- summary(model)
-'
+
 
 # Get the regression model for the specific probe
 model_probe_cg16867657 <- probe_regression_results[['cg16867657']]
