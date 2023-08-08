@@ -126,9 +126,7 @@ probe_ids <- unique(fData(gse40279_matrix)$ID)
 result_df_2 <- data.frame(probe_id = character(0),
                         coefficients = numeric(0),
                         p_value = numeric(0),
-                        r_squared = numeric(0),
-                        # Add more columns as needed
-                        stringsAsFactors = FALSE)
+                        r_squared = numeric(0))
 
 # Define a function to fit the linear regression model and extract relevant information
 fit_regression_2 <- function(probe_id) {
@@ -170,11 +168,60 @@ fit <- eBayes(fit)
 result_limma <- topTable(fit, number = Inf, adjust.method = "BH")
 result_limma_2 <- result_limma[, c("UCSC_RefGene_Name", "P.Value", "logFC")]
 
+result_df_2$"-log10(p_value)" <- -log10(result_df_2$p_value)
 library(ggplot2)
+# Calculate the total number of p-values within the limitation
+total_amount <- sum(-log10(result_df_2$p_value) > 30 & -log10(result_df_2$p_value) < 200)
 ggplot(result_df_2, aes(x = -log10(p_value))) +
-  geom_histogram()
+  geom_histogram(binwidth = 0.5, color = "black") +
+  xlim(c(30, 200))+
+  ylim(c(0, 75))+
+  ggtitle("Distribution of log-transformed p-values") +
+  geom_text(
+    x = 100, y = 65,  # Position the label below the title
+    vjust = 0,         # Adjust the vertical position below the title
+    hjust = 0,         # Align the label to the center
+    label = paste("Total amount of the probes with p.value < 1e-30 :", total_amount),
+    color = "black",
+    size = 3
+  )
 
-  
+ggplot(result_df_2, aes(x = -log10(p_value))) +
+  geom_histogram(binwidth = 0.5, color = "black") +
+  xlim(c(30, 200))+
+  ylim(c(0, 70))+
+  ggtitle("Distribution of log-transformed p-values") +
+  geom_text(
+    x = 110, y = 65,  # Position the label below the title
+    vjust = 0,         # Adjust the vertical position below the title
+    hjust = 0,         # Align the label to the center
+    label = paste("Total amount of the probes with p.value < 1e-30 :", total_amount),
+    color = "black",
+    size = 3
+  ) +
+  scale_x_continuous(
+    breaks = seq(30, 200, by = 10),
+    labels = seq(30, 200, by = 10),
+    limits = c(30, 200),  # Set limits to match xlim
+    expand = c(0, 0)      # Adjust the expand parameter to remove extra space
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 70, by = 10),     # Specify the desired breaks for y-axis
+    labels = seq(0, 70, by = 10),     # Specify the corresponding labels
+    limits = c(0, 70),
+    expand = c(0, 0)                  # Adjust the expand parameter for y-axis
+  )
+
+ggplot(result_df_2, aes(x = -log10(p_value))) +
+  geom_histogram(binwidth = 0.5)+
+  xlim(c(30, 200))+
+  ylim(c(0, 75))+
+  ggtitle("Distribution of log-transformed p_value")
+
+ggplot(result_df_2, aes(x = p_value)) +
+  geom_histogram(binwidth = 0.01)+
+  ggtitle("Distribution of log-transformed p_value")
+
   
   
 
@@ -187,6 +234,7 @@ y <- assayData(probe_data)$exprs[1, ]
 
 # Create and fit the linear regression model
 model <- lm(y ~ X)
+coef(model)["(Intercept)"]
 summary_model <- summary(model)
 
 
