@@ -157,6 +157,61 @@ result_df_2 <- do.call(rbind, lapply(probe_ids, fit_regression_2))
 
 
 
+# Assuming the probe IDs are listed in the 'probe_id' column of the dataset
+probe_ids <- unique(fData(gse40279_matrix)$ID)
+
+# Create an empty data frame to store the results
+result_df_3 <- data.frame(probe_id = character(0),
+                          coefficient_intercept = numeric(0),
+                          coefficient_x1 = numeric(0),
+                          coefficient_x2 = numeric(0),
+                          p_value_intercept = numeric(0),
+                          p_value_x1 = numeric(0),
+                          p_value_x2 = numeric(0),
+                          r_squared = numeric(0),
+                          adjusted_r_squared = numeric(0),
+                          p_value_f_statistic = numeric(0))
+
+# Define a function to fit the linear regression model and extract relevant information
+fit_regression_3 <- function(probe_id) {
+  # Select data for the current probe
+  probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+  
+  # Extract the age and beta value as the predictor and response variables
+  x1 <- probe_data$age
+  x2 <- probe_data$`gender:ch1`
+  y <- assayData(probe_data)$exprs[1, ]
+  
+  # Create and fit the linear regression model
+  model <- lm(y ~ x1 + x2)
+  
+  # Extract relevant information from the model
+  model_summary <- summary(model)
+  coefficients <- coef(model)
+  p_value_x1 <- summary(model)$coefficients[2, "Pr(>|t|)"]
+  p_value_x2 <- summary(model)$coefficients[3, "Pr(>|t|)"]
+  r_squared <- summary(model)$r.squared
+  adjusted_r_squared <- summary(model)$adj.r.squared
+  f_statistic <- model_summary$fstatistic
+  p_value_f_statistic <- pf(f_statistic[1], f_statistic[2], f_statistic[3], lower.tail = TRUE)
+  
+  return(data.frame(probe_id = probe_id,
+                    coefficient_intercept = coefficients["(Intercept)"],
+                    coefficient_x1 = coefficients["x1"],
+                    coefficient_x2 = coefficients["x2"],
+                    p_value_intercept = coefficients["(Intercept)"],
+                    p_value_x1 = p_value_x1,
+                    p_value_x2 = p_value_x2,
+                    r_squared = r_squared,
+                    adjusted_r_squared = adjusted_r_squared,
+                    p_value_f_statistic = p_value_f_statistic))
+}
+
+# Apply the function to each probe ID and rbind the results to the data frame
+result_df_3 <- do.call(rbind, lapply(probe_ids, fit_regression_3))
+
+
+
 
 ## By limma (Not yet solved)
 conditions <- gse40279_matrix$age
@@ -229,11 +284,12 @@ ggplot(result_df_2, aes(x = p_value)) +
 probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg01403239')
 
 # Extract the age and beta value as the predictor and response variables
-X <- probe_data$age
+X1 <- probe_data$age
+# X2 <- probe_data$`gender:ch1`
 y <- assayData(probe_data)$exprs[1, ]
 
 # Create and fit the linear regression model
-model <- lm(y ~ X)
+model <- lm(y ~ X1)
 coef(model)["(Intercept)"]
 summary_model <- summary(model)
 
