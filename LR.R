@@ -193,12 +193,12 @@ fit_regression_3 <- function(probe_id) {
   r_squared <- summary(model)$r.squared
   adjusted_r_squared <- summary(model)$adj.r.squared
   f_statistic <- model_summary$fstatistic
-  p_value_f_statistic <- pf(f_statistic[1], f_statistic[2], f_statistic[3], lower.tail = TRUE)
+  p_value_f_statistic <- pf(f_statistic[1], f_statistic[2], f_statistic[3], lower.tail = FALSE)
   
   return(data.frame(probe_id = probe_id,
                     coefficient_intercept = coefficients["(Intercept)"],
                     coefficient_x1 = coefficients["x1"],
-                    coefficient_x2 = coefficients["x2"],
+                    coefficient_x2 = coefficients["x2M"],
                     p_value_intercept = coefficients["(Intercept)"],
                     p_value_x1 = p_value_x1,
                     p_value_x2 = p_value_x2,
@@ -220,8 +220,10 @@ design <- model.matrix(~0+conditions)
 colnames(design) <- "age"
 fit <- lmFit(gse40279_matrix, design)
 fit <- eBayes(fit)
-result_limma <- topTable(fit, number = Inf, adjust.method = "BH")
+result_limma <- topTable(fit, number = Inf, adjust.method = "BH", sort.by = "P")
 result_limma_2 <- result_limma[, c("UCSC_RefGene_Name", "P.Value", "logFC")]
+
+
 
 result_df_2$"-log10(p_value)" <- -log10(result_df_2$p_value)
 library(ggplot2)
@@ -278,20 +280,57 @@ ggplot(result_df_2, aes(x = p_value)) +
   ggtitle("Distribution of log-transformed p_value")
 
   
-  
+# Select Probe
+probe_id <- 'cg11643285'
+
+# Select data for the current probe
+probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id)
+
+# Extract the age and beta value as the predictor and response variables
+x1 <- probe_data$age
+x2 <- probe_data$`gender:ch1`
+y <- assayData(probe_data)$exprs[1, ]
+
+# Create and fit the linear regression model
+model <- lm(y ~ x1 + x2)
+
+# Extract relevant information from the model
+model_summary <- summary(model)
+coefficients <- coef(model)
+p_value_x1 <- summary(model)$coefficients[2, "Pr(>|t|)"]
+p_value_x2 <- summary(model)$coefficients[3, "Pr(>|t|)"]
+r_squared <- summary(model)$r.squared
+adjusted_r_squared <- summary(model)$adj.r.squared
+f_statistic <- model_summary$fstatistic
+p_value_f_statistic <- pf(f_statistic[1], f_statistic[2], f_statistic[3], lower.tail = FALSE)
+
+test_reuslt <- data.frame(probe_id = probe_id,
+           coefficient_intercept = coefficients["(Intercept)"],
+           coefficient_x1 = coefficients["x1"],
+           coefficient_x2 = coefficients["x2M"],
+           p_value_intercept = coefficients["(Intercept)"],
+           p_value_x1 = p_value_x1,
+           p_value_x2 = p_value_x2,
+           r_squared = r_squared,
+           adjusted_r_squared = adjusted_r_squared,
+           p_value_f_statistic = p_value_f_statistic)
+
 
 # Select data for the current probe
 probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == 'cg01403239')
 
 # Extract the age and beta value as the predictor and response variables
 X1 <- probe_data$age
-# X2 <- probe_data$`gender:ch1`
+X2 <- probe_data$`gender:ch1`
 y <- assayData(probe_data)$exprs[1, ]
 
 # Create and fit the linear regression model
-model <- lm(y ~ X1)
+model <- lm(y ~ X1+X2)
 coef(model)["(Intercept)"]
-summary_model <- summary(model)
+summary_model <- summary.lm(model)
+f_statistic <- summary_model$fstatistic
+p_value_f_statistic <- pf(f_statistic[1], f_statistic[2], f_statistic[3], lower.tail = FALSE)
+
 
 
 # Get the regression model for the specific probe
@@ -337,36 +376,136 @@ correlation_df <- data.frame(probe_id = probe_ids, correlation_coefficient = unl
 
 ## Plot a specific probe's linear regression model with correlation coefficient
 # Replace 'cg16867657' with the specific probe ID you want to plot
-probe_id_of_interest <- 'cg16867657'
-model_of_interest <- probe_regression_results[[probe_id_of_interest]]$model
+probe_id_of_interest <- 'cg12803060'
+
+# Select data for the current probe
+probe_data <- subset(gse40279_matrix, fData(gse40279_matrix)$ID == probe_id_of_interest)
+
+# Extract the age and beta value as the predictor and response variables
+X1 <- probe_data$age
+X2 <- probe_data$`gender:ch1`
+y <- assayData(probe_data)$exprs[1, ]
+
+# Create and fit the linear regression model
+model <- lm(y ~ X1+X2)
+model_of_interest <- model
 
 # Assuming you have the 'X' and 'y' data for the specific probe
 # You can also create a data frame if you have the original data
 data_of_interest <- data.frame(
-  X = model_of_interest$x,
-  y = model_of_interest$y
+  X1 = model_of_interest$model$X1,
+  X2 = model_of_interest$model$X2,
+  y = model_of_interest$model$y
 )
 
 # Calculate the correlation coefficient between 'X' and 'y'
-cor_coefficient <- cor(data_of_interest$X, data_of_interest$y)
+cor_coefficient_X1 <- cor(data_of_interest$X1, data_of_interest$y)
 
 # Calculate the total number of points
 total_points <- nrow(data_of_interest)
 
 library(ggplot2)
 # Plot the data points and the linear regression line
-plot_lm <- ggplot(data_of_interest, aes(x = X, y = y)) +
-  geom_point(color = "blue", size = 1) +  # Scatter plot of data points
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points
   geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
-  geom_text(x = min(data_of_interest$X), y = max(data_of_interest$y),
-            label = paste("Correlation:", round(cor_coefficient, 3)),
-            hjust = 0, vjust = 1, color = "black", size = 4) +  # Add correlation coefficient
-  geom_text(x = min(data_of_interest$X), y = max(data_of_interest$y) - 0.03,  # Adjust y value to place it below the correlation
+  geom_text(x = min(data_of_interest$X1), y = max(data_of_interest$y),
+            label = paste("Correlation_X1:", round(cor_coefficient, 3)),
+            hjust = 0, vjust = -1, color = "black", size = 4) +  # Add correlation coefficient
+  geom_text(x = min(data_of_interest$X1), y = max(data_of_interest$y) - 0.03,  # Adjust y value to place it below the correlation
             label = paste("Total numbers of points:", total_points),
-            hjust = 0, vjust = 1, color = "black", size = 4) +  # Add total number of points
+            hjust = 0, vjust = 0, color = "black", size = 4) +  # Add total number of points
   labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
        x = "Age",
-       y = "Beta Value")
+       y = "Beta Value") +
+  theme(plot.margin = margin(t = 50, r = 10, b = 20, l = 10, unit = "pt"))  # Adjust the bottom margin
+
+# Plot the data points and the linear regression line
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points with color mapping
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
+  geom_text(x = min(data_of_interest$X1), y = max(data_of_interest$y),
+            label = paste("Correlation_X1:", round(cor_coefficient_X1, 3)),
+            hjust = 0, vjust = -0.6, color = "black", size = 4) +  # Adjust vjust to place it below the title
+  geom_text(x = min(data_of_interest$X1), y = max(data_of_interest$y) - 0.03,  # Adjust y value to place it below the correlation
+            label = paste("Total numbers of points:", total_points),
+            hjust = 0, vjust = -0.8, color = "black", size = 4) +  # Adjust vjust to place it below the title
+  labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
+       x = "Age",
+       y = "Beta Value") +
+  theme(
+    plot.title = element_text(hjust = 0, vjust = 15, margin = margin(b = 20, unit = "pt")),  # Adjust title positioning
+    plot.margin = margin(t = 50, r = 10, b = 20, l = 10, unit = "pt")  # Adjust the bottom margin
+  )
+
+# Plot the data points and the linear regression line
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points with color mapping
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
+  labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
+       x = "Age",
+       y = "Beta Value") +
+  annotate("text", x = min(data_of_interest$X1), y = max(data_of_interest$y) + 0.01,
+           label = paste("Correlation_X1:", round(cor_coefficient_X1, 3)),
+           hjust = 0, color = "black", size = 4) +  # Adjust y to place it above the plot area
+  annotate("text", x = min(data_of_interest$X1), y = min(data_of_interest$y) - 0.01,
+           label = paste("Total numbers of points:", total_points),
+           hjust = 0, color = "black", size = 4) +  # Adjust y to place it below the plot area
+  theme(
+    plot.title = element_text(hjust = 0, vjust = 10, margin = margin(b = 20, unit = "pt")),  # Adjust title positioning
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10, unit = "pt")  # Adjust the bottom margin
+  )
+
+# Plot the data points and the linear regression line
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points with color mapping
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
+  labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
+       x = "Age",
+       y = "Beta Value",
+       subtitle = c(paste("Correlation_X1:", round(cor_coefficient_X1, 3)), paste("Total numbers of points:", total_points))) +
+  theme(
+    plot.title = element_text(hjust = 0, vjust = 10, margin = margin(b = 20, unit = "pt")),  # Adjust title positioning
+    plot.subtitle = element_text(hjust = 0, vjust = 15, margin = margin(b = 20, unit = "pt")),  # Adjust subtitle positioning
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10, unit = "pt")  # Adjust the bottom margin
+  )
+
+
+# Create two subtitle lines
+subtitle_lines <- c(
+  paste("Correlation_X1:", round(cor_coefficient_X1, 3)),
+  paste("Total numbers of points:", total_points)
+)
+
+# Plot the data points and the linear regression line
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points with color mapping
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
+  labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
+       x = "Age",
+       y = "Beta Value",
+       subtitle = subtitle_lines) +
+  theme(
+    plot.title = element_text(hjust = 0.5, margin = margin(b = 20, unit = "pt")),  # Adjust title positioning
+    plot.subtitle = element_text(hjust = 0.5, margin = margin(b = 10, unit = "pt")),  # Adjust subtitle positioning
+    plot.margin = margin(t = 40, r = 10, b = 10, l = 10, unit = "pt")  # Adjust the bottom margin
+  )
+
+# Plot the data points and the linear regression line
+plot_lm <- ggplot(data_of_interest, aes(x = X1, y = y, color = X2)) +
+  geom_point(size = 1) +  # Scatter plot of data points with color mapping
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Linear regression line
+  labs(title = paste("Linear Model for Probe:", probe_id_of_interest),
+       x = "Age",
+       y = "Beta Value",
+       subtitle = paste("Correlation_X1:", round(cor_coefficient_X1, 3)),
+       caption = paste("Total numbers of points:", total_points)) +
+  theme(
+    plot.title = element_text(hjust = 0, vjust = 5),  # Adjust title positioning
+    plot.subtitle = element_text(hjust = 0, vjust = 0),  # Adjust subtitle positioning
+    plot.caption = element_text(hjust = 0, vjust = 185),  # Adjust caption positioning
+    plot.margin = margin(t = 15, r = 0, b = 0, l = 5, unit = "pt")  # Adjust the bottom margin
+  )
 
 # Show the plot
 print(plot_lm)
