@@ -555,6 +555,7 @@ model <- lm(y ~ x)
 # Calculate the R-squared and correlation values
 ar_squared <- summary.lm(model)$adj.r.squared
 correlation <- cor(x, y)
+amount_ars06up <- nrow(ars_06up_40279)
 
 plot(log10(merged_30870_40279_p_3$p_30870), log10(merged_30870_40279_p_3$p_40279), 
      xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
@@ -562,8 +563,9 @@ plot(log10(merged_30870_40279_p_3$p_30870), log10(merged_30870_40279_p_3$p_40279
      pch = 20, col = "#8bc34a", cex = 1, xlim = c(-20, 0), ylim = c(-20, 0))
 
 # Add R-squared and correlation values to the plot
-text(-20, 0, sprintf("R-squared: %.4f", ar_squared), adj = 0)
+text(-20, 0, sprintf("Adjusted r-squared: %.4f", ar_squared), adj = 0)
 text(-20, -1, sprintf("Correlation: %.4f", correlation), adj = 0)
+text(-20, -2, sprintf("Amount of the points: %d", amount_ars06up), adj = 0)
 
 
 
@@ -586,6 +588,7 @@ model <- lm(y ~ x)
 # Calculate the R-squared and correlation values
 ar_squared <- summary.lm(model)$adj.r.squared
 correlation <- cor(x, y)
+amount_ars05up <- nrow(ars_05up_40279)
 
 plot(log10(merged_30870_40279_p_4$p_30870), log10(merged_30870_40279_p_4$p_40279), 
      xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
@@ -595,7 +598,7 @@ plot(log10(merged_30870_40279_p_4$p_30870), log10(merged_30870_40279_p_4$p_40279
 # Add R-squared and correlation values to the plot
 text(-20, 0, sprintf("Adjusted r-squared: %.4f", ar_squared), adj = 0)
 text(-20, -1, sprintf("Correlation: %.4f", correlation), adj = 0)
-
+text(-20, -2, sprintf("Amount of the points: %d", amount_ars05up), adj = 0)
 
 
 condition1 <- (merged_30870_40279_p_2$p_30870 < 1e-10)
