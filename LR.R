@@ -516,3 +516,109 @@ coefficients(model_probe_cg16867657)
 
 # R-squared value
 summary(model_probe_cg16867657)$r.squared
+
+
+# Merge results
+res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+res_40279_LR_p <- data.frame(row.names = result_df_2$probe_id, p_40279 = result_df_2$p_value, ProbeID = result_df_2$probe_id)
+
+merged_30870_40279_p_2 <- merge(res_30870_YO_p,
+                              res_40279_LR_p,
+                              by.x = "ProbeID",
+                              by.y = "ProbeID")
+
+plot(log10(merged_30870_40279_p_2$p_30870), log10(merged_30870_40279_p_2$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
+     main = "Scatter plot for gse30870 and gse40279 (8/8)", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+correlation_for_merge_p2 <- cor(log10(merged_30870_40279_p_2$p_30870), log10(merged_30870_40279_p_2$p_40279))
+text(-45, -180, sprintf("Correlation: %.4f", correlation_for_merge_p2), adj = 0)
+
+
+# Merge results with ars > 0.6
+res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+ars_06up_40279 <- result_df_3[result_df_3$adjusted_r_squared > 0.6, ]
+res_40279_LR3_p <- data.frame(row.names = ars_06up_40279$probe_id, p_40279 = ars_06up_40279$p_value_x1, ProbeID = ars_06up_40279$probe_id)
+
+merged_30870_40279_p_3 <- merge(res_30870_YO_p,
+                                res_40279_LR3_p,
+                                by.x = "ProbeID",
+                                by.y = "ProbeID")
+# Assuming merged_30870_40279_p_3$p_30870 and merged_30870_40279_p_3$p_40279 are your data vectors
+x <- log10(merged_30870_40279_p_3$p_30870)
+y <- log10(merged_30870_40279_p_3$p_40279)
+
+# Fit a linear model
+model <- lm(y ~ x)
+
+# Calculate the R-squared and correlation values
+ar_squared <- summary.lm(model)$adj.r.squared
+correlation <- cor(x, y)
+
+plot(log10(merged_30870_40279_p_3$p_30870), log10(merged_30870_40279_p_3$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
+     main = "Scatter plot for gse30870 and gse40279 (probes with ars >0.6)", 
+     pch = 20, col = "#8bc34a", cex = 1, xlim = c(-20, 0), ylim = c(-20, 0))
+
+# Add R-squared and correlation values to the plot
+text(-20, 0, sprintf("R-squared: %.4f", ar_squared), adj = 0)
+text(-20, -1, sprintf("Correlation: %.4f", correlation), adj = 0)
+
+
+
+# Merge results with ars > 0.5
+res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+ars_05up_40279 <- result_df_3[result_df_3$adjusted_r_squared > 0.5, ]
+res_40279_LR3_p <- data.frame(row.names = ars_05up_40279$probe_id, p_40279 = ars_05up_40279$p_value_x1, ProbeID = ars_05up_40279$probe_id)
+
+merged_30870_40279_p_4 <- merge(res_30870_YO_p,
+                                res_40279_LR3_p,
+                                by.x = "ProbeID",
+                                by.y = "ProbeID")
+# Assuming merged_30870_40279_p_3$p_30870 and merged_30870_40279_p_3$p_40279 are your data vectors
+x <- log10(merged_30870_40279_p_4$p_30870)
+y <- log10(merged_30870_40279_p_4$p_40279)
+
+# Fit a linear model
+model <- lm(y ~ x)
+
+# Calculate the R-squared and correlation values
+ar_squared <- summary.lm(model)$adj.r.squared
+correlation <- cor(x, y)
+
+plot(log10(merged_30870_40279_p_4$p_30870), log10(merged_30870_40279_p_4$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
+     main = "Scatter plot for gse30870 and gse40279 (probes with ars > 0.5)", 
+     pch = 20, col = "#8bc34a", cex = 1, xlim = c(-20, 0), ylim = c(-20, 0))
+
+# Add R-squared and correlation values to the plot
+text(-20, 0, sprintf("Adjusted r-squared: %.4f", ar_squared), adj = 0)
+text(-20, -1, sprintf("Correlation: %.4f", correlation), adj = 0)
+
+
+
+condition1 <- (merged_30870_40279_p_2$p_30870 < 1e-10)
+condition2 <- (merged_30870_40279_p_2$p_40279 < 1e-10)
+filterd_data <- merged_30870_40279_p_2[condition1&condition2, ]
+
+# Create a scatter plot with x-axis: p-value from analyzed gse30870 by MEAL and y-axis: p-value from analyzed gse40279 by linear regression model.
+plot(log10(filterd_data$p_30870), log10(filterd_data$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from analysis of gse40279", 
+     main = "Scatter plot for gse30870(p.value<1e-10) and gse40279(p.value<1e-10)", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+# Assuming merged_30870_40279_p_3$p_30870 and merged_30870_40279_p_3$p_40279 are your data vectors
+x <- log10(filterd_data$p_30870)
+y <- log10(filterd_data$p_40279)
+
+# Fit a linear model
+model <- lm(y ~ x)
+
+# Calculate the R-squared and correlation values
+ar_squared <- summary.lm(model)$adj.r.squared
+correlation <- cor(x, y)
+
+# Add R-squared and correlation values to the plot
+text(-22, -180, sprintf("Adjusted r-squared: %.4f", ar_squared), adj = 0)
+text(-22, -190, sprintf("Correlation: %.4f", correlation), adj = 0)

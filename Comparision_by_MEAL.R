@@ -202,10 +202,14 @@ merged_30870_40279_p <- merge(res_30870_YO_p,
                          by.x = "ProbeID",
                          by.y = "ProbeID")
 
-plot(log(merged_30870_40279_p$p_30870), log(merged_30870_40279_p$p_40279), 
-       xlab = "P.value from analysis of gse30870", ylab = "P.value from analysis of gse40279", 
-       main = "Comparision of gse30870 and gse40279", 
+plot(log10(merged_30870_40279_p$p_30870), log10(merged_30870_40279_p$p_40279), 
+       xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from analysis of gse40279", 
+       main = "Scatter plot for gse30870 and gse40279 (7/25)", 
        pch = 20, col = "#8bc34a", cex = 1)
+
+correlation_for_merge_p <- cor(log10(merged_30870_40279_p$p_30870), log10(merged_30870_40279_p$p_40279))
+text(-45, -180, sprintf("Correlation: %.4f", correlation_for_merge_p), adj = 0)
+
 
 condition1 <- (merged_30870_40279_p$p_30870 < 1e-5)
 condition2 <- (merged_30870_40279_p$p_40279 < 1e-5)
