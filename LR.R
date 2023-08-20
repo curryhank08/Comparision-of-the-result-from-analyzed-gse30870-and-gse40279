@@ -214,13 +214,15 @@ result_df_3 <- do.call(rbind, lapply(probe_ids, fit_regression_3))
 
 
 ## By limma (Not yet solved)
-conditions <- gse40279_matrix$age
+x1 <- gse40279_matrix$age
+x2 <- gse40279_matrix$`gender:ch1`
 #f <- factor(conditions)
-design <- model.matrix(~0+conditions)
-colnames(design) <- "age"
+design <- model.matrix(~ x1+x2+x1:x2)
+colnames(design)[colnames(design) == "x2M"] <- "x2"
+colnames(design)[colnames(design) == "x1:x2M"] <- "x1:x2"
 fit <- lmFit(gse40279_matrix, design)
 fit <- eBayes(fit)
-result_limma <- topTable(fit, number = Inf, adjust.method = "BH", sort.by = "P")
+result_limma <- topTable(fit, coef="x1", number = Inf, adjust.method = "BH", sort.by = "P")
 result_limma_2 <- result_limma[, c("UCSC_RefGene_Name", "P.Value", "logFC")]
 
 
