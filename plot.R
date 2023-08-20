@@ -1,6 +1,6 @@
 ### author: Yao
 
-library(ggplot2)
+
 ## manhattan plot
 library(qqman)
 result_30870_sub$CHR <- as.numeric(result_30870_sub$CHR)
@@ -40,7 +40,21 @@ manhattan(result_limma_x1x2,
           genomewideline = FALSE,
           suggestiveline = -log10(1e-05))
 ## histogram
-ggplot(result_30870_sub)
-
+library(ggplot2)
+ggplot(result_30870_sub, aes(x = P.Value)) +
+  geom_histogram(binwidth = 0.02) +
+  ggtitle("Distribution of P.Value (gse30870)") +
+  scale_y_continuous(
+    breaks = seq(0, 125000, by = 25000),     # Specify the desired breaks for y-axis
+    labels = seq(0, 125000, by = 25000),     # Specify the corresponding labels
+    limits = c(0, 125000),
+    expand = c(0, 0)                  # Adjust the expand parameter for y-axis
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 1, by = 0.1),
+    labels = seq(0, 1, by = 0.1),
+    limits = c(0, 1),  # Set limits to match xlim
+    expand = c(0, 0)      # Adjust the expand parameter to remove extra space
+  ) 
 
 
