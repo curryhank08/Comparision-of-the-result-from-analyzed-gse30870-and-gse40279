@@ -80,9 +80,18 @@ hist(result_30870_sub$P.Value,
      ylab = "Count")             # Label for y-axis
 
 # Create a histogram using base R plotting functions
-hist(result_30870_sub$P.Value, 
+hist(result_limma_x1$P.Value, 
      breaks = seq(0, 1, by = 0.01),  # Specify the bin breaks
      col = "skyblue",                # Set color of bars
-     main = "Histogram plot for gse30870-P.Value",  # Set main title
+     main = "Histogram plot for gse40279-P.Value_x1",  # Set main title
      xlab = "P.Value",               # Label for x-axis
-     ylab = "Count")             # Label for y-axis
+     ylab = "Count",
+     ylim = c(0, 140000))             # Label for y-axis
+
+# Create a histogram using base R plotting functions
+hist(result_limma_x1x2$P.Value, 
+     breaks = seq(0, 1, by = 0.01),  # Specify the bin breaks
+     col = "skyblue",                # Set color of bars
+     main = "Histogram plot for gse40279-P.Value_x1x2",  # Set main title
+     xlab = "P.Value",               # Label for x-axis
+     ylab = "Count") 
