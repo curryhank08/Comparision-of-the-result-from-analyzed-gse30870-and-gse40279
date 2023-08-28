@@ -65,6 +65,11 @@ fit_regression_4 <- function(probe_id) {
 # Apply the function to each probe ID and rbind the results to the data frame
 result_df_4 <- do.call(rbind, lapply(probe_ids, fit_regression_4))
 
+# Adjust the p.values from above
+result_df_4$adj.p_value_x1 <- p.adjust(result_df_4$p_value_x1, method = "BH")
+result_df_4$adj.p_value_x2 <- p.adjust(result_df_4$p_value_x2, method = "BH")
+result_df_4$adj.p_value_x1x2 <- p.adjust(result_df_4$p_value_x1x2, method = "BH")
+
 
 
 ## Test LR model for just a probe

@@ -35,17 +35,22 @@ LogC <- (qx[5] > 100) ||
 if (LogC) { ex[which(ex <= 0)] <- NaN
   exprs(gset) <- log2(ex)}
 
-## By limma (Not yet solved)
+library(limma)
+## Multiple LR by limma
 x1 <- gse40279_matrix$age
 x2 <- gse40279_matrix$`gender:ch1`
-#f <- factor(conditions)
 design <- model.matrix(~ x1+x2+x1:x2)
 colnames(design)[colnames(design) == "x2M"] <- "x2"
 colnames(design)[colnames(design) == "x1:x2M"] <- "x1:x2"
 fit <- lmFit(gse40279_matrix, design)
 fit <- eBayes(fit)
 result_limma_x1 <- topTable(fit, coef="x1", number = Inf, adjust.method = "BH", sort.by = "P")
+result_limma_x1_2 <- result_limma_x1[, c("ID", "P.Value", "adj.P.Val", "t", "AveExpr", "logFC", "B")]
+result_limma_x2 <- topTable(fit, coef="x2", number = Inf, adjust.method = "BH", sort.by = "P")
+result_limma_x2_2 <- result_limma_x2[, c("ID", "P.Value", "adj.P.Val", "t", "AveExpr", "logFC", "B")]
 result_limma_x1x2 <- topTable(fit, coef="x1:x2", number = Inf, adjust.method = "BH", sort.by = "P")
+result_limma_x1x2_2 <- result_limma_x1x2[, c("ID", "P.Value", "adj.P.Val", "t", "AveExpr", "logFC", "B")]
+
 
 "
 # result_limma_2 <- result_limma[, c('UCSC_RefGene_Name', 'P.Value', 'logFC')]
