@@ -27,6 +27,17 @@ manhattan(result_limma_x1,
           genomewideline = FALSE,
           suggestiveline = -log10(1e-05))
 
+manhattan(result_limma_x1, 
+          main = "Manhattan Plot for gse40279-p.value_x1",
+          cex = 0.3,
+          ylim = c(0, 70),
+          chr="CHR", 
+          bp="RANGE_START", 
+          snp= "ID", 
+          p="P.Value",
+          genomewideline = FALSE,
+          suggestiveline = -log10(1e-05))
+
 result_limma_x1x2$CHR <- as.numeric(result_limma_x1x2$CHR)
 manhattan(result_limma_x1x2, 
           main = "Manhattan Plot for gse40279-p.value_x1x2",

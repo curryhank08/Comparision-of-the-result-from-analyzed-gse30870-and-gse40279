@@ -70,6 +70,89 @@ result_df_4$adj.p_value_x1 <- p.adjust(result_df_4$p_value_x1, method = "BH")
 result_df_4$adj.p_value_x2 <- p.adjust(result_df_4$p_value_x2, method = "BH")
 result_df_4$adj.p_value_x1x2 <- p.adjust(result_df_4$p_value_x1x2, method = "BH")
 
+# Select probes with |adj.R.squared| >= 0.7
+condition_ars <- abs(result_df_4$adjusted_r_squared) >= 0.7
+result_df_4_ars0.7 <- result_df_4[condition_ars, ]
+
+# Probe ids of interest
+probe_id_of_interest <- result_df_4_ars0.7$probe_id
+
+# Select data for training
+probe_data_ars0.7 <- subset(gse40279_matrix, fData(gse40279_matrix)$ID %in% probe_id_of_interest)
+
+# Extract the age and beta value as the predictor and response variables
+X <- probe_data_ars0.7@assayData[["exprs"]]
+# Transpose the matrix of beta values
+X <- t(X)
+X <- as.data.frame(X)
+y <- probe_data_ars0.7$age
+
+# Create and fit the linear regression model
+model <- lm(y ~ ., data = X)
+
+# Make predictions using the trained model
+gse30870_data_sub <- exprs(gse30870_matrix_sub)
+gse30870_data_sub <- t(gse30870_data_sub)
+gse30870_data_sub <- as.data.frame(gse30870_data_sub)
+gse30870_data_sub <- gse30870_data_sub[, colnames(gse30870_data_sub) %in% probe_id_of_interest]
+predicted_ages <- predict(model, newdata = gse30870_data_sub)
+
+gse30870_matrix_sub$age <- gse30870_matrix_sub$`age:ch1`
+comparison_30870 <- data.frame('predicted age' = predicted_ages, 'Chronological age' = gse30870_matrix_sub$`age:ch1`)
+
+
+
+# Select the beta values for the sample you want to predict
+sample_to_predict <- gse30870_data_sub[1, ]  # Replace 1 with the index of the sample you want to predict
+
+# Transpose the sample's data and subset columns to match the trained model's predictors
+sample_to_predict <- t(sample_to_predict)
+sample_to_predict <- sample_to_predict[colnames(sample_to_predict) %in% colnames(X)]
+
+# Predict the age for the single sample
+predicted_age <- predict(model, newdata = data.frame(t(sample_to_predict)))
+
+# Print the predicted age
+cat("Predicted age:", predicted_age, "\n")
+
+# Debug
+nrow_gse30870_sub <- nrow(gse30870_data_sub)
+ncol_gse30870_sub <- ncol(gse30870_data_sub)
+
+nrow_X <- nrow(X)
+ncol_X <- ncol(X)
+
+cat("gse30870_data_sub dimensions:", nrow_gse30870_sub, "rows and", ncol_gse30870_sub, "columns\n")
+cat("X dimensions:", nrow_X, "rows and", ncol_X, "columns\n")
+
+
+data_types_gse30870 <- sapply(gse30870_data_sub, class)
+data_types_X <- sapply(X, class)
+
+cat("Data types in gse30870_data_sub:", data_types_gse30870, "\n")
+cat("Data types in X:", data_types_X, "\n")
+
+
+
+predict(object, newdata, se.fit = FALSE, scale = NULL, df = Inf,
+        interval = c("none", "confidence", "prediction"),
+        level = 0.95, type = c("response", "terms"),
+        terms = NULL, na.action = na.pass,
+        pred.var = res.var/weights, weights = 1,
+        rankdeficient = c("warnif", "simple", "non-estim", "NA", "NAwarn"),
+        tol = 1e-6, verbose = FALSE,
+        ...)
+
+
+" Check predictors number
+# Extract coefficients
+coefficients <- coef(model)
+
+# Determine the number of predictors (excluding intercept)
+num_predictors <- length(coefficients) - 1
+
+cat('Number of predictors:', num_predictors)
+"
 
 
 ## Test LR model for just a probe
