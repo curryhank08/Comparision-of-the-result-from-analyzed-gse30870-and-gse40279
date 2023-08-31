@@ -95,6 +95,7 @@ gse30870_data_sub <- exprs(gse30870_matrix_sub)
 gse30870_data_sub <- t(gse30870_data_sub)
 gse30870_data_sub <- as.data.frame(gse30870_data_sub)
 gse30870_data_sub <- gse30870_data_sub[, colnames(gse30870_data_sub) %in% probe_id_of_interest]
+
 predicted_ages <- predict(model, newdata = gse30870_data_sub)
 
 gse30870_matrix_sub$age <- gse30870_matrix_sub$`age:ch1`
@@ -113,7 +114,7 @@ sample_to_predict <- sample_to_predict[colnames(sample_to_predict) %in% colnames
 predicted_age <- predict(model, newdata = data.frame(t(sample_to_predict)))
 
 # Print the predicted age
-cat("Predicted age:", predicted_age, "\n")
+# cat("Predicted age:", predicted_age, "\n")
 
 # Debug
 nrow_gse30870_sub <- nrow(gse30870_data_sub)
