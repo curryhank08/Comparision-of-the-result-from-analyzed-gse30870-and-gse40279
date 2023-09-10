@@ -168,3 +168,77 @@ venn1 +
   )
 
 theme(plot.title = element_text(hjust = 0.5, size = 20, face = "bold"))
+
+
+
+# Merge results for scatter plot (8/8) 
+res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+res_40279_LR_p <- data.frame(row.names = result_df_2$probe_id, p_40279 = result_df_2$p_value, ProbeID = result_df_2$probe_id)
+
+merged_30870_40279_p_2 <- merge(res_30870_YO_p,
+                                res_40279_LR_p,
+                                by.x = "ProbeID",
+                                by.y = "ProbeID")
+
+plot(log10(merged_30870_40279_p_2$p_30870), log10(merged_30870_40279_p_2$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from LR analysis of gse40279", 
+     main = "Scatter plot for gse30870 and gse40279 (8/8)", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+correlation_for_merge_p2 <- cor(log10(merged_30870_40279_p_2$p_30870), log10(merged_30870_40279_p_2$p_40279))
+text(-45, -180, sprintf("Correlation: %.4f", correlation_for_merge_p2), adj = 0)
+
+
+# Merge results for scatter plot (9/11) 
+# The p.value for gse40279 is from multiple linear regression model with interaction
+res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+res_40279_MLR_p <- data.frame(row.names = result_df_4$probe_id, p_40279 = result_df_4$p_value_x1, ProbeID = result_df_4$probe_id)
+
+merged_30870_40279_p_4 <- merge(res_30870_YO_p,
+                                res_40279_MLR_p,
+                                by.x = "ProbeID",
+                                by.y = "ProbeID")
+
+plot(log10(merged_30870_40279_p_4$p_30870), log10(merged_30870_40279_p_2$p_40279), 
+     xlab = "log10(P.value) from analysis of gse30870", ylab = "log10(P.value) from MLR analysis of gse40279", 
+     main = "Scatter plot for gse30870 and gse40279(multiple LR with interaction)", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+correlation_for_merge_p4 <- cor(log10(merged_30870_40279_p_4$p_30870), log10(merged_30870_40279_p_4$p_40279))
+text(-45, -180, sprintf("Correlation: %.4f", correlation_for_merge_p4), adj = 0)
+
+# Merge results for scatter plot (9/11) 
+# The r.squared for gse40279 is from multiple linear regression model with interaction
+res_30870_YO_rs <- data.frame(row.names = row.names(result_30870_sub), r_squared_30870 = result_30870_sub$r_squared, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
+res_40279_MLR_rs <- data.frame(row.names = result_df_4$probe_id, r_squared_40279 = result_df_4$r_squared, ProbeID = result_df_4$probe_id)
+
+merged_30870_40279_rs <- merge(res_30870_YO_rs,
+                                res_40279_MLR_rs,
+                                by.x = "ProbeID",
+                                by.y = "ProbeID")
+
+plot(log10(merged_30870_40279_rs$r_squared_30870), log10(merged_30870_40279_rs$r_squared_40279), 
+     xlab = "log10(r-squared) from analysis of gse30870", ylab = "log10(r-squared) from MLR analysis of gse40279", 
+     main = "Scatter plot for r-squared from gse30870 and gse40279(multiple LR with interaction)", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+correlation_for_merge_rs <- cor(log10(merged_30870_40279_rs$r_squared_30870), log10(merged_30870_40279_rs$r_squared_40279))
+text(-45, -180, sprintf("Correlation: %.4f", correlation_for_merge_rs), adj = 0)
+
+
+## Scatter plot for predicted age and chronological age
+# Omit samples with NA
+comparison_30870_clean <- na.omit(comparison_30870)
+
+# Replace 'Newborn' with 1 in the 'Chronological.age' column
+comparison_30870_clean$Chronological.age <- gsub("Newborn", 1, comparison_30870_clean$Chronological.age)
+
+# Remove 'years' from the 'Chronological.age' column and convert it to integers
+comparison_30870_clean$Chronological.age <- as.integer(gsub(" years", "", comparison_30870_clean$Chronological.age))
+
+plot(comparison_30870_clean$Chronological.age, comparison_30870_clean$predicted.age, 
+     xlab = "Chronological.age", ylab = "predicted.age", 
+     main = "Scatter plot for age prediction of gse30870's samples", 
+     pch = 20, col = "#8bc34a", cex = 1)
+
+

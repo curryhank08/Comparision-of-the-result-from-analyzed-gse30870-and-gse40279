@@ -520,7 +520,7 @@ coefficients(model_probe_cg16867657)
 summary(model_probe_cg16867657)$r.squared
 
 
-# Merge results
+# Merge results for scatter plot (8/8) 
 res_30870_YO_p <- data.frame(row.names = row.names(result_30870_sub), p_30870 = result_30870_sub$P.Value, UCSC_RefGene_name = result_30870_sub$UCSC_RefGene_Name, ProbeID = result_30870_sub$ID)
 res_40279_LR_p <- data.frame(row.names = result_df_2$probe_id, p_40279 = result_df_2$p_value, ProbeID = result_df_2$probe_id)
 

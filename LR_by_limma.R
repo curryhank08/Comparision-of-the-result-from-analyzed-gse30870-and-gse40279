@@ -60,3 +60,23 @@ results <- decideTests(fit, method = 'separate', adjust.method = 'BH', p.value =
 # Showing numbers of genes significant in each comparison
 vennDiagram(results, show.include = FALSE) + title('Numbers of genes significant (p.value<1e-5) in each comparison')
 "
+library(limma)
+
+gset <- gse30870_matrix_sub
+ex <- exprs(gset)
+# log2 transform
+qx <- as.numeric(quantile(ex, c(0., 0.25, 0.5, 0.75, 0.99, 1.0), na.rm=T))
+LogC <- (qx[5] > 100) ||
+  (qx[6]-qx[1] > 50 && qx[2] > 0)
+if (LogC) { ex[which(ex <= 0)] <- NaN
+exprs(gset) <- log2(ex)}
+
+library(limma)
+## Multiple LR by limma
+x1 <- gse30870_matrix_sub$source_name_ch1
+design_30870 <- model.matrix(~ x1)
+colnames(design_30870)[colnames(design_30870) == "x1Nonagenarians"] <- "x1"
+fit <- lmFit(ex, design_30870)
+fit <- eBayes(fit)
+result_30870bylimma_x1 <- topTable(fit, coef="x1", number = Inf, adjust.method = "BH", sort.by = "P")
+
