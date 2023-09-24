@@ -99,7 +99,7 @@ gse30870_data_sub <- gse30870_data_sub[, colnames(gse30870_data_sub) %in% probe_
 predicted_ages <- predict(model, newdata = gse30870_data_sub)
 
 gse30870_matrix_sub$age <- gse30870_matrix_sub$`age:ch1`
-comparison_30870 <- data.frame('predicted age' = predicted_ages, 'Chronological age' = gse30870_matrix_sub$`age:ch1`),
+comparison_30870 <- data.frame('predicted age' = predicted_ages, 'Chronological age' = gse30870_matrix_sub$`age:ch1`)
 
 
 # Select the beta values for the sample you want to predict
