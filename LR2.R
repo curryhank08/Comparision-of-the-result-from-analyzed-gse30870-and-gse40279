@@ -74,6 +74,10 @@ result_df_4$adj.p_value_x1x2 <- p.adjust(result_df_4$p_value_x1x2, method = "BH"
 condition_ars <- abs(result_df_4$adjusted_r_squared) >= 0.7
 result_df_4_ars0.7 <- result_df_4[condition_ars, ]
 
+# Select probes with |adj.R.squared| >= 0.5
+condition_ars <- abs(result_df_4$adjusted_r_squared) >= 0.5
+result_df_4_ars0.5 <- result_df_4[condition_ars, ]
+
 # Probe ids of interest
 probe_id_of_interest <- result_df_4_ars0.7$probe_id
 
